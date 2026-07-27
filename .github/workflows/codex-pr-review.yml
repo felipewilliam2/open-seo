@@ -25,6 +25,7 @@ jobs:
       contents: read
     outputs:
       final_message: ${{ steps.codex.outputs.final-message }}
+      reviewed: ${{ steps.key.outputs.present }}
 
     steps:
       - name: Check out the PR merge result
@@ -42,8 +43,24 @@ jobs:
             "$PR_BASE_REF" \
             "+refs/pull/$PR_NUMBER/head"
 
+      # Without the key, codex-action dies with "Failed to read server info"
+      # and every PR shows a red check. Skip instead: the review is optional,
+      # a broken required-looking check is not.
+      - name: Check for the API key
+        id: key
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::notice::OPENAI_API_KEY is not set — skipping the Codex review."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Review the change with Codex
         id: codex
+        if: steps.key.outputs.present == 'true'
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -70,6 +87,7 @@ jobs:
     needs: review
     if: >-
       needs.review.result == 'success' &&
+      needs.review.outputs.reviewed == 'true' &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:

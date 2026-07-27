@@ -1,8 +1,9 @@
 # Cloudflare Self-Hosting: Workers Builds
 
-Fork-local doc. Upstream (`every-app/open-seo`) does not have this file — see
-[Surviving an upstream update](#surviving-an-upstream-update) before you follow
-the update flow in [Operations](./SELF_HOSTING_CLOUDFLARE_OPERATIONS.md).
+Fork-local doc. Upstream (`every-app/open-seo`) does not have this file — read
+[Updating from upstream](#updating-from-upstream) before you follow the update
+flow in [Operations](./SELF_HOSTING_CLOUDFLARE_OPERATIONS.md), which would
+delete this fork's commits.
 
 Workers Builds deploys this repo to the Worker on every push to `main`, instead
 of running `pnpm run deploy` from a laptop. The dashboard is the source of
@@ -125,12 +126,12 @@ git merge upstream/main
 The fork is kept deliberately close to upstream so merges stay boring. What
 diverges:
 
-| file                                            | conflict risk                            |
-| ----------------------------------------------- | ---------------------------------------- |
-| `wrangler.jsonc`                                | when upstream edits the bindings block   |
+| file                                             | conflict risk                            |
+| ------------------------------------------------ | ---------------------------------------- |
+| `wrangler.jsonc`                                 | when upstream edits the bindings block   |
 | `docs/SELF_HOSTING_CLOUDFLARE_WORKERS_BUILDS.md` | none — upstream has no such file         |
-| `.github/workflows/sync-upstream.yml`           | none — same                              |
-| `.agents/PAPERCUTS.md`                          | low — an added line at the top of `Open` |
+| `.github/workflows/sync-upstream.yml`            | none — same                              |
+| `.agents/PAPERCUTS.md`                           | low — an added line at the top of `Open` |
 
 On a `wrangler.jsonc` conflict, keep this account's resource ids (the
 `-anhanga` ones) and take upstream's other changes.

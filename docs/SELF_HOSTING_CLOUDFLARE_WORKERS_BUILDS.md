@@ -131,7 +131,6 @@ diverges:
 | `wrangler.jsonc`                                 | when upstream edits the bindings block   |
 | `docs/SELF_HOSTING_CLOUDFLARE_WORKERS_BUILDS.md` | none — upstream has no such file         |
 | `.github/workflows/sync-upstream.yml`            | none — same                              |
-| `.github/workflows/codex-pr-review.yml`          | none — same                              |
 | `.agents/PAPERCUTS.md`                           | low — an added line at the top of `Open` |
 
 On a `wrangler.jsonc` conflict, keep this account's resource ids (the

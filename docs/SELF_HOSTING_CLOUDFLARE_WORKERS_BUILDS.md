@@ -66,6 +66,35 @@ Secrets are not in the repo and `wrangler deploy` preserves them. The six on the
 Worker (`BETTER_AUTH_SECRET`, `DATAFORSEO_API_KEY`, `GOOGLE_CLIENT_ID`,
 `GOOGLE_CLIENT_SECRET`, `POLICY_AUD`, `TEAM_DOMAIN`) survive every deploy.
 
+## Where the app is served
+
+Two hostnames reach the same Worker:
+
+- `https://seo.anhanga.tech` — Custom Domain, the one to use
+- `https://open-seo.withered-shape-65d6.workers.dev` — the workers.dev route
+  `wrangler deploy` prints
+
+Neither appears in `wrangler.jsonc`: there is no `routes` block and no
+`workers_dev` key. Custom Domains live in the Worker's configuration
+(`Settings` -> `Domains & Routes`), not in the repo, which is why a
+`wrangler deploy` with no `routes` block does not remove them. Do not add a
+`routes` block to "fix" the apparent omission — an incomplete one would drop the
+domain that is currently working.
+
+Both hostnames sit behind the same Cloudflare Access application
+(`anhanga.cloudflareaccess.com`). An unauthenticated request to either returns a
+302 to the Access login, so neither is a way around the other.
+
+After a deploy, confirming the Custom Domain still answers is one command:
+
+```bash
+curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" https://seo.anhanga.tech/
+```
+
+A `302` pointing at `anhanga.cloudflareaccess.com` is the healthy answer — the
+Worker is up and Access is enforcing. A `200` would mean Access is not in front
+of it.
+
 ## Surviving an upstream update
 
 The update flow in [Operations](./SELF_HOSTING_CLOUDFLARE_OPERATIONS.md) runs

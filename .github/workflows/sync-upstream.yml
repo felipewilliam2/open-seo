@@ -90,7 +90,22 @@ jobs:
             - `docs/SELF_HOSTING_CLOUDFLARE_WORKERS_BUILDS.md` survived.
         run: |
           branch=$(git rev-parse --abbrev-ref HEAD)
-          git push origin "$branch"
+
+          # Re-running a run keeps github.run_number, so the branch name is the
+          # same, but the fresh merge commit carries a new timestamp and a
+          # different sha. A plain push would be rejected as non-fast-forward
+          # and the rerun could never recover. The branch is created and owned
+          # by this workflow — nothing human lands on it — so replacing it is
+          # the intended semantics.
+          git push --force origin "$branch"
+
+          # A rerun after a successful attempt would otherwise fail here with
+          # "a pull request already exists".
+          if [ -n "$(gh pr list --head "$branch" --state open --json number --jq '.[].number')" ]; then
+            echo "PR for $branch already open; branch updated."
+            exit 0
+          fi
+
           gh pr create \
             --base main \
             --head "$branch" \

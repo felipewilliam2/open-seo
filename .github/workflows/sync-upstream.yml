@@ -47,7 +47,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b "sync/upstream-$(date -u +%Y-%m-%d)"
+          # Run number keeps a manual dispatch from colliding with the
+          # scheduled run on the same day.
+          git checkout -b "sync/upstream-$(date -u +%Y-%m-%d)-${{ github.run_number }}"
           if git merge upstream/main --no-edit; then
             echo "conflicts=false" >> "$GITHUB_OUTPUT"
           else

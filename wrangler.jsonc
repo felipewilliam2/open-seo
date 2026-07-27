@@ -61,30 +61,33 @@
   "triggers": {
     "crons": ["*/15 * * * *"],
   },
-  // This config serves local dev and Docker self-host only. All Cloudflare
-  // deployments — previews, prod, self-host — go through Alchemy
-  // (alchemy.run.ts), which provisions real resources per stage and never
-  // reads these ids.
+  // FORK-LOCAL: these are the Anhangá account's own resources, not upstream's.
+  // They match the live `open-seo` Worker's bindings, so `wrangler deploy` and
+  // `db:migrate:prod` (which resolves the DB binding from this file) target the
+  // real, populated database. Upstream's ids deploy to an account we do not own.
   //
-  // The ids below are NOT dead config: miniflare derives its on-disk storage
-  // filenames (.wrangler/state, a persistent volume in Docker self-hosts)
-  // from an HMAC of `id`/`database_id`. Changing them orphans every existing
-  // local and self-hosted database. Leave them as-is.
+  // Upstream's comment here says all Cloudflare deploys go through Alchemy and
+  // never read these ids — that describes the hosted path. Self-hosting follows
+  // docs/SELF_HOSTING_CLOUDFLARE_MANUAL.md, which does read them.
+  //
+  // miniflare derives its on-disk storage filenames (.wrangler/state, a
+  // persistent volume in Docker self-hosts) from an HMAC of `id`/`database_id`.
+  // Changing these orphans existing local and Docker self-host databases.
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "4abd52f3f2c549ac83cc2cb4ceec8620",
+      "id": "d26a0c72f482455cbf9ea79fab16b3d8",
     },
     {
       "binding": "OAUTH_KV",
-      "id": "bd1759494309474a9b423b029967b0db",
+      "id": "e497e24761c84c9e874428442312016a",
     },
   ],
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "open-seo",
-      "database_id": "37bee90a-e1aa-404f-b01e-b0d1d479bda1",
+      "database_name": "open-seo-anhanga",
+      "database_id": "db455300-baf8-4948-a8f4-92333073aa99",
       "migrations_dir": "drizzle",
     },
   ],
@@ -107,7 +110,7 @@
   // ],
   "r2_buckets": [
     {
-      "bucket_name": "open-seo",
+      "bucket_name": "open-seo-anhanga",
       "binding": "R2",
     },
   ],

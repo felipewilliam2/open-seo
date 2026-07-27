@@ -1,0 +1,96 @@
+name: Sync upstream
+
+# Merges every-app/open-seo into this fork and opens a PR for review.
+#
+# Merge, not `git reset --hard upstream/main`. The flow in
+# docs/SELF_HOSTING_CLOUDFLARE_OPERATIONS.md resets because it assumes the
+# Cloudflare deploy-button setup, where wrangler.jsonc was rewritten for you
+# rather than committed. This fork has real commits on top of upstream, so a
+# reset would delete them and force a backup/restore dance. A merge keeps them.
+#
+# The PR is the deploy gate: Workers Builds runs `wrangler versions upload` on
+# the branch (no production impact), and merging to main is what deploys. Do
+# not add auto-merge.
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Mondays, 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream https://github.com/every-app/open-seo.git
+          git fetch upstream main
+
+      - name: Check for new commits
+        id: check
+        run: |
+          count=$(git rev-list --count HEAD..upstream/main)
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "$count upstream commit(s) not in this fork."
+
+      - name: Merge upstream
+        if: steps.check.outputs.count != '0'
+        id: merge
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "sync/upstream-$(date -u +%Y-%m-%d)"
+          if git merge upstream/main --no-edit; then
+            echo "conflicts=false" >> "$GITHUB_OUTPUT"
+          else
+            # Leave no half-merged branch behind; a human resolves this one.
+            git merge --abort
+            echo "conflicts=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Report conflicts
+        if: steps.merge.outputs.conflicts == 'true'
+        run: |
+          echo "::error::Merge conflicts with upstream. Resolve locally:"
+          echo "  git fetch upstream && git checkout -b sync/upstream main"
+          echo "  git merge upstream/main"
+          echo "wrangler.jsonc is the expected conflict — keep this account's"
+          echo "resource ids (the -anhanga ones), take upstream's other changes."
+          exit 1
+
+      - name: Push and open PR
+        if: steps.merge.outputs.conflicts == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BODY: |
+            Automated merge of `every-app/open-seo` into this fork.
+
+            Merging this PR deploys to production — Workers Builds runs
+            `wrangler deploy` on pushes to `main`. The build on this branch only
+            uploaded a version; nothing is live yet.
+
+            Before merging, check:
+
+            - `wrangler.jsonc` still points at this account's resources
+              (`-anhanga`). If upstream touched that block, the merge may have
+              taken their ids.
+            - New files under `drizzle/` mean a schema migration. The deploy
+              command applies it to production automatically, before the new
+              code serves traffic.
+            - `docs/SELF_HOSTING_CLOUDFLARE_WORKERS_BUILDS.md` survived.
+        run: |
+          branch=$(git rev-parse --abbrev-ref HEAD)
+          git push origin "$branch"
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "sync: merge upstream ($(date -u +%Y-%m-%d))" \
+            --body "$PR_BODY"

@@ -1,9 +1,10 @@
 # Cloudflare Self-Hosting: Workers Builds
 
 Fork-local doc. Upstream (`every-app/open-seo`) does not have this file — read
-[Updating from upstream](#updating-from-upstream) before you follow the update
-flow in [Operations](./SELF_HOSTING_CLOUDFLARE_OPERATIONS.md), which would
-delete this fork's commits.
+[Updating from upstream](#updating-from-upstream) before you follow the
+deploy-button update flow in
+[Legacy deployments](./SELF_HOSTING_CLOUDFLARE_LEGACY.md), which would delete
+this fork's commits.
 
 Workers Builds deploys this repo to the Worker on every push to `main`, instead
 of running `pnpm run deploy` from a laptop. The dashboard is the source of
@@ -98,13 +99,13 @@ of it.
 
 ## Updating from upstream
 
-Do **not** follow the update flow in
-[Operations](./SELF_HOSTING_CLOUDFLARE_OPERATIONS.md). It runs
+Do **not** follow the deploy-button update flow in
+[Legacy deployments](./SELF_HOSTING_CLOUDFLARE_LEGACY.md). It runs
 `git reset --hard upstream/main`, which deletes every file upstream does not
-have — including this one — and then force-pushes. Upstream prescribes that
-because it assumes the deploy-button setup, where Cloudflare rewrote
-`wrangler.jsonc` for you. This fork has real commits on top of upstream, so a
-reset would throw them away and force a backup/restore dance to get them back.
+have — including this one — and then force-pushes. Upstream prescribes that for
+deploy-button setups, where Cloudflare rewrote `wrangler.jsonc` for you. This
+fork has real commits on top of upstream, so a reset would throw them away and
+force a backup/restore dance to get them back.
 
 Merge instead. It keeps the fork's commits and deletes nothing.
 
@@ -143,7 +144,8 @@ reverted.
 ## Deploying without Workers Builds
 
 The local path still works and is the one
-[Manual deploy](./SELF_HOSTING_CLOUDFLARE_MANUAL.md) documents:
+[Legacy deployments](./SELF_HOSTING_CLOUDFLARE_LEGACY.md#updating-manual-wrangler-deployments)
+documents:
 
 ```bash
 pnpm install

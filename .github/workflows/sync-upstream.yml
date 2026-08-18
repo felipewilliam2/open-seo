@@ -3,7 +3,7 @@ name: Sync upstream
 # Merges every-app/open-seo into this fork and opens a PR for review.
 #
 # Merge, not `git reset --hard upstream/main`. The flow in
-# docs/SELF_HOSTING_CLOUDFLARE_OPERATIONS.md resets because it assumes the
+# docs/SELF_HOSTING_CLOUDFLARE_LEGACY.md resets because it assumes the
 # Cloudflare deploy-button setup, where wrangler.jsonc was rewritten for you
 # rather than committed. This fork has real commits on top of upstream, so a
 # reset would delete them and force a backup/restore dance. A merge keeps them.

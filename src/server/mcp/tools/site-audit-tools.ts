@@ -57,7 +57,7 @@ const runInputSchema = {
     .boolean()
     .optional()
     .describe(
-      "Run Lighthouse on a sample of up to 10 representative pages (default true).",
+      "Run Lighthouse on a sample of up to 10 representative pages (default false — it adds several minutes of wall-clock time). Pass true only when the user wants performance/Core Web Vitals detail.",
     ),
 } as const;
 
@@ -78,12 +78,15 @@ export const runSiteAuditTool = {
       .passthrough(),
     annotations: {
       readOnlyHint: false,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },
   handler: withMcpProjectAuth(async (args: RunArgs, context) => {
-    const lighthouseStrategy = (args.runLighthouse ?? true) ? "auto" : "none";
+    // Default OFF for agent calls: Lighthouse turns a 1-2 minute crawl into a
+    // many-minute wait, which chat agents handle badly. The app UI passes its
+    // own explicit lighthouseStrategy, so this default only governs agents.
+    const lighthouseStrategy = (args.runLighthouse ?? false) ? "auto" : "none";
     const limitTier = await AuditService.resolveAuditLimitTier(
       context.auth.organizationId,
     );
@@ -153,7 +156,7 @@ export const getAuditStatusTool = {
   config: {
     title: "Get site audit status",
     description:
-      "Check the progress of a site audit (phase, pages crawled, Lighthouse progress). Free — reads OpenSEO state. Omit auditId for the most recent audit.",
+      "Check the progress of a site audit (phase, pages crawled, Lighthouse progress). Free — reads OpenSEO state and may reconcile a dead workflow by marking its audit failed. Omit auditId for the most recent audit.",
     inputSchema: statusInputSchema,
     outputSchema: z
       .object({
@@ -162,7 +165,7 @@ export const getAuditStatusTool = {
       })
       .passthrough(),
     annotations: {
-      readOnlyHint: true,
+      readOnlyHint: false,
       openWorldHint: false,
       destructiveHint: false,
     },

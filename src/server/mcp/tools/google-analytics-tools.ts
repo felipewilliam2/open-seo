@@ -159,7 +159,10 @@ function actionUrl(
         "ga4_property_inaccessible",
       ].includes(code)
     ) {
-      return buildDashboardUrl(baseUrl, `/p/${projectId}/settings`);
+      return buildDashboardUrl(
+        baseUrl,
+        `/p/${projectId}/settings/integrations`,
+      );
     }
     return undefined;
   }
@@ -258,7 +261,7 @@ export const getGoogleAnalyticsOrganicLandingPagesTool = {
     outputSchema: reportOutputSchema,
     annotations: {
       readOnlyHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },
@@ -292,7 +295,7 @@ export const getGoogleAnalyticsPagePerformanceTool = {
     outputSchema: reportOutputSchema,
     annotations: {
       readOnlyHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },
@@ -329,7 +332,7 @@ export const getGoogleAnalyticsKeyEventsTool = {
     outputSchema: reportOutputSchema,
     annotations: {
       readOnlyHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },
@@ -360,7 +363,7 @@ export const getSearchOpportunitiesTool = {
     outputSchema: opportunityOutputSchema,
     annotations: {
       readOnlyHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },
@@ -396,7 +399,7 @@ export const getGoogleAnalyticsOrganicOverviewTool = {
     outputSchema: overviewOutputSchema,
     annotations: {
       readOnlyHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },
@@ -434,7 +437,7 @@ export const getGoogleAnalyticsTrafficAcquisitionTool = {
     outputSchema: reportOutputSchema,
     annotations: {
       readOnlyHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },
@@ -471,7 +474,7 @@ export const getGoogleAnalyticsEcommercePerformanceTool = {
     outputSchema: reportOutputSchema,
     annotations: {
       readOnlyHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },
@@ -500,7 +503,7 @@ export const getGoogleAnalyticsSiteSearchTool = {
     outputSchema: reportOutputSchema,
     annotations: {
       readOnlyHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },
@@ -538,7 +541,7 @@ export const getGoogleAnalyticsAudienceBreakdownTool = {
     outputSchema: reportOutputSchema,
     annotations: {
       readOnlyHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },
@@ -568,7 +571,7 @@ export const getGoogleAnalyticsMeasurementHealthTool = {
     outputSchema: measurementHealthOutputSchema,
     annotations: {
       readOnlyHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },

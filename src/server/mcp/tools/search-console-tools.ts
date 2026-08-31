@@ -214,7 +214,7 @@ export const getSearchConsolePerformanceTool = {
     },
     annotations: {
       readOnlyHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },
@@ -229,7 +229,7 @@ export const getSearchConsolePerformanceTool = {
     const meta = buildProjectMeta(
       context,
       args.projectId,
-      `/p/${args.projectId}/settings`,
+      `/p/${args.projectId}/settings/integrations`,
     );
 
     // GSC rejects searchAppearance combined with any other dimension.
@@ -350,7 +350,7 @@ export const inspectUrlsTool = {
     },
     annotations: {
       readOnlyHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
       destructiveHint: false,
     },
   },
@@ -365,7 +365,7 @@ export const inspectUrlsTool = {
     const meta = buildProjectMeta(
       context,
       args.projectId,
-      `/p/${args.projectId}/settings`,
+      `/p/${args.projectId}/settings/integrations`,
     );
 
     try {

@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppError } from "@/server/lib/errors";
 import { objectSchema } from "@/server/mcp/output-schemas";
 import * as researchTools from "./dataforseo-research-tools";
+import * as localSeoTools from "./local-seo-tools";
 import { getBacklinksProfileTool } from "./get-backlinks-profile";
+import { getSearchConsolePerformanceTool } from "./search-console-tools";
+import { runSiteAuditTool } from "./site-audit-tools";
 import { makeToolContext } from "./tool-test-support";
 
 const mocks = vi.hoisted(() => ({
@@ -12,6 +15,9 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("cloudflare:workers", () => ({
   env: {},
+  DurableObject: class {
+    readonly ctx = null;
+  },
 }));
 
 vi.mock("@/server/features/projects/services/ProjectService", () => ({
@@ -88,10 +94,12 @@ describe("DataForSEO research tool output schemas", () => {
     ["search_local_businesses", "businesses"],
     ["get_google_business_questions", "questions"],
     ["get_ranked_keywords", "keywords"],
+    ["get_business_reviews", "reviews"],
+    ["get_business_updates", "updates"],
   ])(
     "%s accepts typed (non-plain-object) provider rows",
     async (toolName, field) => {
-      const tools = researchTools;
+      const tools = { ...researchTools, ...localSeoTools };
       const tool = Object.values(tools).find((t) => t.name === toolName);
       if (!tool) throw new Error(`tool ${toolName} not found`);
 
@@ -103,21 +111,69 @@ describe("DataForSEO research tool output schemas", () => {
       const result = await schema.safeParseAsync({
         [field]: [new ProviderRow("example.com", 1)],
         totalCount: 1,
+        // Required by the queued business-data tools; ignored by the rest.
+        status: "completed",
+        taskId: "google:task-1",
       });
 
       expect(result.success).toBe(true);
     },
   );
 
+  it("get_business_profile accepts a typed provider profile object", async () => {
+    const schema = objectSchema(
+      localSeoTools.getBusinessProfileTool.config.outputSchema,
+    );
+
+    const result = await schema.safeParseAsync({
+      profile: new ProviderRow("example.com", 1),
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it("get_backlinks_profile accepts a paginated backlinks profile payload", async () => {
     const schema = objectSchema(getBacklinksProfileTool.config.outputSchema);
 
     const result = await schema.safeParseAsync({
+      target: "example.com",
+      scope: "domain",
       backlinks: backlinkPage,
       meta: {
         organizationId: "org_123",
         projectId: "project_123",
         url: "https://app.example.com/p/project_123/backlinks",
+      },
+    });
+
+    expect(result.success).toBe(true);
+  });
+});
+
+describe("MCP output schemas with expected missing fields", () => {
+  // Google omits position for the discover and googleNews search types.
+  it("accepts Search Console rows without a position", async () => {
+    const schema = objectSchema(
+      getSearchConsolePerformanceTool.config.outputSchema,
+    );
+
+    const result = await schema.safeParseAsync({
+      ok: true,
+      rows: [{ clicks: 0, impressions: 1, ctr: 0 }],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  // Refusals (for example, audit capacity) never start an audit, so they
+  // have no id to report.
+  it("accepts a site-audit refusal without an audit id", async () => {
+    const schema = objectSchema(runSiteAuditTool.config.outputSchema);
+
+    const result = await schema.safeParseAsync({
+      meta: {
+        organizationId: "org_123",
+        projectId: "project_123",
       },
     });
 
